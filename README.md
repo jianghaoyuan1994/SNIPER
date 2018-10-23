@@ -9,12 +9,12 @@ Instead of processing all pixels in an image pyramid, SNIPER selectively process
 This significantly speeds up multi-scale training as it operates on low-resolution chips. 
 Due to its memory efficient design, SNIPER can benefit from *Batch Normalization* during training and it makes larger batch-sizes possible for instance-level recognition tasks on a single GPU. Hence, we do not need to synchronize batch-normalization statistics across GPUs and we can train object detectors similar to the way we do image classification!
 
-[SNIPER](https://arxiv.org/abs/1805.09300) is described in the following paper:
+[SNIPER](https://arxiv.org/abs/1805.09300) is initially described in the following paper published at NIPS 2018:
 
 <div class="highlight highlight-html"><pre>
 <b>SNIPER: Efficient Multi-Scale Training
 <a href=https://github.com/bharatsingh430>Bharat Singh*</a>, <a href=https://github.com/mahyarnajibi>Mahyar Najibi*</a>, and Larry S. Davis (* denotes equal contribution)</b>
-arXiv preprint arXiv:1805.09300, 2018.
+NIPS, 2018.
 </pre></div>
 
 ### Features
@@ -45,7 +45,7 @@ SNIPER is released under Apache license. See LICENSE for details.
 @article{sniper2018,
   title={{SNIPER}: Efficient Multi-Scale Training},
   author={Singh, Bharat and Najibi, Mahyar and Davis, Larry S},
-  journal={arXiv preprint arXiv:1805.09300},
+  journal={NIPS},
   year={2018}
 }
 @article{analysissnip2017,
@@ -154,20 +154,22 @@ You can train the SNIPER detector with or without negative chip mining as descri
 
 ###### Training with Negative Chip Mining:
 
-Negative chip mining results in a relative improvement in AP (please refer to the [paper](https://arxiv.org/pdf/1805.09300.pdf) for the details). To determine the candidate hard negative regions, SNIPER uses pre-computed proposals. It is possible to use any set of proposals for this purpose. However, for COCO, we also provide the pre-computed proposals extracted from a network trained with SNIPER and a short training schedule (*i.e.* trained for two epochs as described in the paper). The following script downloads the pre-computed proposals and extracts them into the default path (```data/proposals```):
+Negative chip mining results in a relative improvement in AP (please refer to the [paper](https://arxiv.org/pdf/1805.09300.pdf) for the details). To determine the candidate hard negative regions, SNIPER uses proposals extracted from a proposal network trained for a short training schedule. 
 
+For the COCO dataset, we provide the pre-computed proposals. The following commands download the pre-computed proposals, extracts them into the default path (```data/proposals```), and trains the SNIPER detector with the default parameters:
 ```
 bash download_sniper_neg_props.sh
+python main_train.py
 ```
 
-After downloading the proposals, you can train the model with SNIPER and default parameters by calling the following script:
+However, it is also possible to extract the required proposals using this repository (e.g. if you plan to train SNIPER on a new dataset). We provided an all-in-one script which performs all the required steps for training SNIPER with Negative Chip Mining. Running the following script trains a proposal network for a short cycle (i.e. 2 epochs), extract the proposals, and train the SNIPER detector with Negative Chip Mining:
 ```
-python main_train.py
+bash train_neg_props_and_sniper.sh --cfg [PATH_TO_CFG_FILE]
 ```
 
 ###### Training without Negative Chip Mining:
 
-You can disable the negative chip mining by setting the ```TRAIN.USE_NEG_CHIPS``` to ```False```. This is especially useful if you plan to try SNIPER on a new dataset or want to shorten the training cycle. In this case, there is no need for using any pre-computed proposals and the training can be started by calling the following command:
+You can disable the negative chip mining by setting the ```TRAIN.USE_NEG_CHIPS``` to ```False```. This is useful if you plan to try SNIPER on a new dataset or want to shorten the training cycle. In this case, the training can be started by calling the following command:
 ```
 python main_train.py --set TRAIN.USE_NEG_CHIPS False
 ```
